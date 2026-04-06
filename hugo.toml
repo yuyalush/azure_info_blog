@@ -1,0 +1,36 @@
+baseURL = 'https://yuyalush.github.io/azure_info_blog/'
+languageCode = 'ja'
+title = 'Azure Tech Blog'
+theme = 'PaperMod'
+
+[params]
+  author = 'Azure Tech Blog'
+  description = 'Azureに関する最新情報・ニュース・技術情報をお届けするブログ'
+  ShowReadingTime = true
+  ShowShareButtons = false
+  ShowPostNavLinks = true
+  ShowBreadCrumbs = true
+  ShowCodeCopyButtons = true
+  defaultTheme = 'auto'
+  homeInfoParams = { Title = '☁️ Azure Tech Blog', Content = 'Azureに関する最新情報・公式ブログ・注目のGitHubリポジトリをご紹介します。' }
+
+[menu]
+  [[menu.main]]
+    identifier = 'home'
+    name = 'ホーム'
+    url = '/'
+    weight = 1
+  [[menu.main]]
+    identifier = 'posts'
+    name = '記事一覧'
+    url = '/posts/'
+    weight = 2
+  [[menu.main]]
+    identifier = 'tags'
+    name = 'タグ'
+    url = '/tags/'
+    weight = 3
+
+[taxonomies]
+  tag = 'tags'
+  category = 'categories'
