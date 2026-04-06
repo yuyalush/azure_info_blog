@@ -1,0 +1,85 @@
+name: Azure週次ニュース自動生成・公開
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # 毎週月曜 0:00 UTC = 9:00 JST
+  workflow_dispatch:       # 手動実行も可能
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  models: read  # GitHub Models API アクセス用
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  generate-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install feedparser openai
+
+      - name: Generate weekly news article
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/generate_weekly_news.py
+
+      - name: Commit and push article
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add content/posts/
+          if git diff --staged --quiet; then
+            echo "変更なし（既存記事）"
+          else
+            WEEK=$(python3 -c "
+import datetime
+today = datetime.date.today()
+last_mon = today - datetime.timedelta(days=today.weekday() + 7)
+print(last_mon.strftime('%Y年%m月%d日'))
+")
+            git commit -m "📰 Azureウィークリーニュース ${WEEK} を自動投稿
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+            git push
+          fi
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: 'latest'
+          extended: true
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Build with Hugo
+        run: hugo --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
