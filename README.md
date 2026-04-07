@@ -14,11 +14,11 @@ azure_info_blog/
 ├── .github/
 │   └── workflows/
 │       ├── deploy.yml          # mainへのpushで自動ビルド・デプロイ
-│       └── weekly-news.yml     # 毎週月曜にAzureニュースを自動生成・投稿
+│       └── weekly-news.yml     # 毎日9:00 JSTにAzureニュースを自動生成・投稿
 ├── content/
 │   └── posts/                  # ブログ記事（Markdown）
 ├── scripts/
-│   └── generate_weekly_news.py # Azure週次ニュース自動生成スクリプト
+│   └── generate_weekly_news.py # Azureデイリーニュース自動生成スクリプト
 ├── themes/
 │   └── PaperMod/               # Hugo テーマ（git submodule）
 └── hugo.toml                   # Hugo 設定ファイル
@@ -41,22 +41,22 @@ main にプッシュ
 
 ---
 
-## 📰 Azureウィークリーニュース自動生成
+## 📰 Azureデイリーニュース自動生成
 
-毎週月曜日 **9:00 JST** に GitHub Actions が自動でAzure最新情報をまとめた記事を生成・投稿します。
+毎日 **9:00 JST** に GitHub Actions が自動で前日のAzure最新情報をまとめた記事を生成・投稿します。
 
 ### 実行フロー
 
 ```
-毎週月曜 9:00 JST（cron: 0 0 * * 1）
+毎日 9:00 JST（cron: 0 0 * * *）
   └─▶ weekly-news.yml が起動
-        ├─① Azure公式RSSフィードを取得
+        ├─① Azure公式RSSフィードを取得（前日分）
         │     - https://azure.microsoft.com/en-us/blog/feed/
         │     - https://azure.microsoft.com/en-us/updates/feed/
         ├─② GitHub Models API（gpt-4o-mini）で日本語記事を自動生成
         │     ※ API利用不可時はRSSデータをそのまま整形（フォールバック）
         ├─③ Hugo Markdown形式で記事ファイルを生成
-        │     → content/posts/azure-weekly-YYYY-MM-DD.md
+        │     → content/posts/azure-news-YYYY-MM-DD.md
         ├─④ リポジトリへコミット・プッシュ
         └─⑤ Hugo ビルド → GitHub Pages デプロイ
 ```
@@ -66,7 +66,7 @@ main にプッシュ
 
 ### 手動実行
 
-GitHub の **Actions** タブ → **Azure週次ニュース自動生成・公開** → **Run workflow** から手動実行できます。
+GitHub の **Actions** タブ → **Azureデイリーニュース自動生成・公開** → **Run workflow** から手動実行できます。
 
 ---
 
