@@ -14,7 +14,7 @@ azure_info_blog/
 ├── .github/
 │   └── workflows/
 │       ├── deploy.yml          # mainへのpushで自動ビルド・デプロイ
-│       └── weekly-news.yml     # 毎日9:00 JSTにAzureニュースを自動生成・投稿
+│       └── daily-news.yml      # 毎日9:00 JSTにAzureニュースを自動生成・投稿
 ├── content/
 │   └── posts/                  # ブログ記事（Markdown）
 ├── scripts/
@@ -61,7 +61,7 @@ main にプッシュ
         └─⑤ Hugo ビルド → GitHub Pages デプロイ
 ```
 
-**ワークフロー**: [`.github/workflows/weekly-news.yml`](.github/workflows/weekly-news.yml)  
+**ワークフロー**: [`.github/workflows/daily-news.yml`](.github/workflows/daily-news.yml)  
 **スクリプト**: [`scripts/generate_weekly_news.py`](scripts/generate_weekly_news.py)
 
 ### 手動実行
