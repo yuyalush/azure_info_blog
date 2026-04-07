@@ -51,9 +51,7 @@ jobs:
             echo "変更なし（既存記事）"
           else
             DATE=$(python3 -c "import datetime; yesterday = datetime.date.today() - datetime.timedelta(days=1); print(yesterday.strftime('%Y年%m月%d日'))")
-            git commit -m "📰 Azureデイリーニュース ${DATE} を自動投稿
-
-Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+            git commit -m "📰 Azureデイリーニュース ${DATE} を自動投稿"
             git push
           fi
 
