@@ -51,12 +51,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "変更なし（既存記事）"
           else
-            WEEK=$(python3 -c "
-import datetime
-today = datetime.date.today()
-last_mon = today - datetime.timedelta(days=today.weekday() + 7)
-print(last_mon.strftime('%Y年%m月%d日'))
-")
+            WEEK=$(python3 -c "import datetime; today = datetime.date.today(); last_mon = today - datetime.timedelta(days=today.weekday() + 7); print(last_mon.strftime('%Y\u5e74%m\u6708%d\u65e5'))")
             git commit -m "📰 Azureウィークリーニュース ${WEEK} を自動投稿"
             git push
           fi
