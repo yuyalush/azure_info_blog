@@ -22,10 +22,12 @@ GITHUB_MODELS_ENDPOINT = "https://models.inference.ai.azure.com"
 MODEL_NAME = "gpt-4o-mini"
 
 
-def get_yesterday_range():
-    """前日の日付を返す"""
-    yesterday = datetime.date.today() - datetime.timedelta(days=1)
-    return yesterday, yesterday
+def get_week_range():
+    """先週の月曜〜日曜の日付範囲を返す"""
+    today = datetime.date.today()
+    last_monday = today - datetime.timedelta(days=today.weekday() + 7)
+    last_sunday = last_monday + datetime.timedelta(days=6)
+    return last_monday, last_sunday
 
 
 def fetch_entries(feed_url, start_date, end_date):
@@ -58,14 +60,14 @@ def generate_with_ai(entries, start_date, end_date, github_token):
     """GitHub Models API (gpt-4o-mini) で日本語記事を生成"""
     client = OpenAI(base_url=GITHUB_MODELS_ENDPOINT, api_key=github_token)
 
-    date_str = start_date.strftime('%Y年%m月%d日')
+    period = f"{start_date.strftime('%Y年%m月%d日')}〜{end_date.strftime('%Y年%m月%d日')}"
     news_text = "\n".join(
         f"- [{e['title']}]({e['link']}) ({e['published']})\n  {e['summary']}"
         for e in entries[:30]
     )
 
     prompt = f"""あなたはAzureの技術情報を日本語でまとめる専門ブログライターです。
-以下の{date_str}のAzure公式情報を元に、日本語のAzureデイリーニュース記事を作成してください。
+以下の{period}のAzure公式情報を元に、日本語のAzureウィークリーニュース記事を作成してください。
 
 ## 収集した情報
 {news_text}
@@ -73,7 +75,7 @@ def generate_with_ai(entries, start_date, end_date, github_token):
 ## 出力要件
 - 完全に日本語で書く
 - Hugo Markdown形式で本文のみ出力（front matterは含めない）
-- 冒頭に「本日のハイライト」を箇条書きで３～５件まとめる
+- 冒頭に「今週のハイライト」を箇条書きで3〜5件まとめる
 - 続いてカテゴリ別（AI・機械学習、コンピューティング、セキュリティ、開発ツール、その他）に整理
 - 各ニュースを2〜3文で日本語要約し、元記事リンクを必ず付ける
 - エンジニア向けの簡潔・実用的な文体で書く
@@ -90,19 +92,19 @@ def generate_with_ai(entries, start_date, end_date, github_token):
 
 def generate_simple(entries, start_date, end_date):
     """AIなしのシンプルなフォールバック記事生成"""
-    date_str = start_date.strftime('%Y年%m月%d日')
+    period = f"{start_date.strftime('%Y年%m月%d日')}〜{end_date.strftime('%Y年%m月%d日')}"
 
     if not entries:
         return (
-            f"是の日（{date_str}）はAzureの主要アップデートが見つかりませんでした。\n\n"
+            f"今週（{period}）はAzureの主要アップデートが見つかりませんでした。\n\n"
             "最新情報は下記公式サイトをご確認ください。\n\n"
             "- [Azure ブログ](https://azure.microsoft.com/ja-jp/blog/)\n"
             "- [Azure アップデート](https://azure.microsoft.com/ja-jp/updates/)\n"
         )
 
     lines = [
-        f"{date_str}のAzure最新情報をまとめてお届けします。\n",
-        "## 本日のアップデート\n",
+        f"今週（{period}）のAzure最新情報をまとめてお届けします。\n",
+        "## 今週のアップデート\n",
     ]
     for e in entries:
         lines.append(f"### [{e['title']}]({e['link']})")
@@ -118,21 +120,22 @@ def generate_simple(entries, start_date, end_date):
 
 def build_post(body, start_date, end_date):
     """Hugo front matter + 本文を組み合わせてファイルパスと内容を返す"""
-    date_str = start_date.strftime("%Y年%m月%d日")
+    period_start = start_date.strftime("%Y年%m月%d日")
+    period_end = end_date.strftime("%Y年%m月%d日")
     today = datetime.date.today().isoformat()
-    filepath = f"content/posts/azure-news-{start_date.strftime('%Y-%m-%d')}.md"
+    filepath = f"content/posts/azure-weekly-{start_date.strftime('%Y-%m-%d')}.md"
 
     front_matter = f"""---
-title: "Azureデイリーニュース（{date_str}）"
+title: "Azureウィークリーニュース（{period_start}〜{period_end}）"
 date: {today}
 draft: false
 tags:
   - "Azure"
-  - "デイリーニュース"
+  - "週次ニュース"
   - "アップデート"
 categories:
-  - "デイリーニュース"
-description: "{date_str}のAzure最新情報をまとめてお届けします。"
+  - "週次ニュース"
+description: "{period_start}〜{period_end}のAzure最新情報をまとめてお届けします。"
 ---
 """
     return filepath, front_matter + body
@@ -144,8 +147,8 @@ def main():
         print("Error: GITHUB_TOKEN が設定されていません", file=sys.stderr)
         sys.exit(1)
 
-    start, end = get_yesterday_range()
-    print(f"対象日: {start}")
+    start, end = get_week_range()
+    print(f"対象期間: {start} 〜 {end}")
 
     entries = []
     for url in AZURE_FEEDS:

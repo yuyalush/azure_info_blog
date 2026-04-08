@@ -1,8 +1,8 @@
-name: Azureデイリーニュース自動生成・公開
+name: Azure週次ニュース自動生成・公開
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # 毎日 0:00 UTC = 9:00 JST
+    - cron: '0 0 * * 1'  # 毎週月曜 0:00 UTC = 9:00 JST
   workflow_dispatch:       # 手動実行も可能
 
 permissions:
@@ -38,7 +38,7 @@ jobs:
       - name: Install Python dependencies
         run: pip install feedparser openai
 
-      - name: Generate daily news article
+      - name: Generate weekly news article
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python scripts/generate_weekly_news.py
@@ -51,8 +51,13 @@ jobs:
           if git diff --staged --quiet; then
             echo "変更なし（既存記事）"
           else
-            DATE=$(python3 -c "import datetime; yesterday = datetime.date.today() - datetime.timedelta(days=1); print(yesterday.strftime('%Y年%m月%d日'))")
-            git commit -m "📰 Azureデイリーニュース ${DATE} を自動投稿"
+            WEEK=$(python3 -c "
+import datetime
+today = datetime.date.today()
+last_mon = today - datetime.timedelta(days=today.weekday() + 7)
+print(last_mon.strftime('%Y年%m月%d日'))
+")
+            git commit -m "📰 Azureウィークリーニュース ${WEEK} を自動投稿"
             git push
           fi
 
