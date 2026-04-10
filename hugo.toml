@@ -18,17 +18,17 @@ theme = 'PaperMod'
   [[menu.main]]
     identifier = 'home'
     name = 'ホーム'
-    url = '/'
+    url = '/azure_info_blog/'
     weight = 1
   [[menu.main]]
     identifier = 'posts'
     name = '記事一覧'
-    url = '/posts/'
+    url = '/azure_info_blog/posts/'
     weight = 2
   [[menu.main]]
     identifier = 'tags'
     name = 'タグ'
-    url = '/tags/'
+    url = '/azure_info_blog/tags/'
     weight = 3
 
 [taxonomies]
